@@ -43,6 +43,24 @@ class EcriPlusExtractor {
     const selectedValue = document.querySelector('.ember-power-select-selected-item');
     const currentSelection = selectedValue ? selectedValue.innerText.trim() : '';
 
+    // DRAG & DROP - Blocs a deplacer
+    const dragItems = document.querySelectorAll('.proposal-draglist-items');
+    const draggableBlocks = Array.from(dragItems).map(el => el.innerText.trim()).filter(t => t.length > 0);
+
+    // DRAG & DROP - Categories (les titres avant chaque zone de depot)
+    const categProposals = document.querySelector('.categ-proposals');
+    const categories = [];
+    if (categProposals) {
+      const categoryElements = categProposals.querySelectorAll('p');
+      categoryElements.forEach(el => {
+        const text = el.innerText.trim();
+        // Ignorer les instructions
+        if (text && !text.includes('Veuillez') && !text.includes('glisser') && text.length < 100) {
+          categories.push(text);
+        }
+      });
+    }
+
     // Fusion de toutes les options
     const allOptions = [...dropdownChoices, ...qcmChoices];
 
@@ -52,11 +70,26 @@ class EcriPlusExtractor {
     if (instruction) question += instruction;
     if (labels.length > 0) question += '\n\nContexte de reponse: ' + labels.join(' [...] ');
     
+    // Ajout des options dropdown/QCM
     if (allOptions.length > 0) {
       question += '\n\nOptions disponibles:\n';
       allOptions.forEach((opt, i) => {
         question += (i + 1) + '. ' + opt + '\n';
       });
+    }
+
+    // Ajout des exercices drag & drop
+    if (draggableBlocks.length > 0 && categories.length > 0) {
+      question += '\n\n--- EXERCICE DE CLASSEMENT ---\n';
+      question += 'Categories disponibles:\n';
+      categories.forEach((cat, i) => {
+        question += '- ' + cat + '\n';
+      });
+      question += '\nDefinitions/blocs a classer:\n';
+      draggableBlocks.forEach((block, i) => {
+        question += (i + 1) + '. "' + block + '"\n';
+      });
+      question += '\nIndique dans quelle categorie chaque definition doit aller.';
     }
 
     if (currentSelection) {
@@ -70,6 +103,8 @@ class EcriPlusExtractor {
       instruction: instruction,
       labels: labels,
       dropdownChoices: dropdownChoices,
+      draggableBlocks: draggableBlocks,
+      categories: categories,
       currentSelection: currentSelection,
       url: window.location.href
     };
