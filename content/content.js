@@ -1,13 +1,9 @@
-// Script injecté dans les pages ecri+
-// Extrait le contenu des questions
-
 class EcriPlusExtractor {
   constructor() {
     this.init();
   }
 
   init() {
-    // Écoute les messages du popup
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.action === 'extractQuestion') {
         const questionData = this.extractQuestionData();
@@ -18,25 +14,27 @@ class EcriPlusExtractor {
   }
 
   extractQuestionData() {
-    // À adapter selon la structure HTML réelle d'ecri+
-    const questionElement = document.querySelector('.question-text, [data-question], .enonce');
-    const optionsElements = document.querySelectorAll('.option, .reponse, [data-option]');
+    const titleElement = document.querySelector('.challenge-statement__title');
+    const title = titleElement ? titleElement.innerText.trim() : '';
 
-    const question = questionElement?.innerText?.trim() || '';
-    const options = Array.from(optionsElements).map((el, index) => ({
-      id: index,
-      text: el.innerText?.trim() || ''
-    }));
+    const instructionElement = document.querySelector('.challenge-statement-instruction__text');
+    const instruction = instructionElement ? instructionElement.innerText.trim() : '';
+
+    const proposalLabels = document.querySelectorAll('.qrocm-proposal__label');
+    const labels = Array.from(proposalLabels).map(el => el.innerText.trim()).filter(t => t.length > 0);
+
+    let question = '';
+    if (title) question += 'Competence: ' + title + '\n\n';
+    if (instruction) question += instruction;
+    if (labels.length > 0) question += '\n\nContexte: ' + labels.join(' [...] ');
 
     return {
-      question,
-      options,
-      url: window.location.href,
-      timestamp: new Date().toISOString()
+      question: question,
+      options: [],
+      url: window.location.href
     };
   }
 }
 
-// Initialisation
 new EcriPlusExtractor();
-console.log('Ecri+ Assistant: Content script chargé');
+console.log('Ecri+ Assistant charge');
