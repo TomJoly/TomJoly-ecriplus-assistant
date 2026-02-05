@@ -1,73 +1,33 @@
-// Service Worker - Gère les appels API au LLM
-
-const LLM_CONFIG = {
-  apiUrl: 'https://api.openai.com/v1/chat/completions',
-  model: 'gpt-4'
+var LLM_CONFIG = {
+  apiUrl: 'https://api.mistral.ai/v1/chat/completions',
+  model: 'mistral-small-latest'
 };
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === 'askLLM') {
-    handleLLMRequest(request.data)
-      .then(sendResponse)
-      .catch(error => sendResponse({ error: error.message }));
+    handleLLMRequest(request.data).then(sendResponse).catch(function(e) { sendResponse({ error: e.message }); });
     return true;
   }
 });
 
 async function handleLLMRequest(questionData) {
-  const apiKey = await getStoredApiKey();
-  
-  if (!apiKey) {
-    throw new Error('Clé API non configurée');
-  }
+  var result = await chrome.storage.sync.get(['llmApiKey']);
+  if (!result.llmApiKey) throw new Error('Cle API non configuree');
 
-  const prompt = buildPrompt(questionData);
-  
-  const response = await fetch(LLM_CONFIG.apiUrl, {
+  var response = await fetch(LLM_CONFIG.apiUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + result.llmApiKey },
     body: JSON.stringify({
       model: LLM_CONFIG.model,
       messages: [
-        {
-          role: 'system',
-          content: 'Tu es un expert en langue française. Tu aides à analyser des questions de certification en français (orthographe, grammaire, vocabulaire, compréhension). Explique ton raisonnement de manière pédagogique.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
+        { role: 'system', content: 'Tu es un expert en francais. Donne LA BONNE REPONSE en premier, puis explique brievement.' },
+        { role: 'user', content: 'Question ecri+:\n\n' + questionData.question + '\n\nDonne la bonne reponse.' }
       ],
-      temperature: 0.3
+      temperature: 0.2
     })
   });
 
-  const data = await response.json();
-  return {
-    answer: data.choices[0]?.message?.content,
-    usage: data.usage
-  };
-}
-
-function buildPrompt(questionData) {
-  let prompt = `Question : ${questionData.question}\n\n`;
-  
-  if (questionData.options?.length > 0) {
-    prompt += 'Options de réponse :\n';
-    questionData.options.forEach((opt, i) => {
-      prompt += `${i + 1}. ${opt.text}\n`;
-    });
-  }
-  
-  prompt += '\nAnalyse cette question et indique la bonne réponse avec une explication détaillée.';
-  
-  return prompt;
-}
-
-async function getStoredApiKey() {
-  const result = await chrome.storage.sync.get(['llmApiKey']);
-  return result.llmApiKey;
+  if (!response.ok) throw new Error('Erreur API: ' + response.status);
+  var data = await response.json();
+  return { answer: data.choices[0].message.content };
 }
