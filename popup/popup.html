@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecri+ Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Ecri+ Assistant</h1>
+    <div id="config-section" class="section">
+      <h2>Configuration</h2>
+      <input type="password" id="api-key" placeholder="Cle API Mistral">
+      <button id="save-key">Sauvegarder</button>
+      <div id="save-status" class="status hidden"></div>
+    </div>
+    <div id="main-section" class="section">
+      <button id="extract-btn" class="primary">Analyser la question</button>
+      <div id="question-preview" class="preview hidden">
+        <h3>Question detectee :</h3>
+        <p id="question-text"></p>
+      </div>
+      <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <span>Analyse en cours...</span>
+      </div>
+      <div id="response-section" class="hidden">
+        <h3>Reponse :</h3>
+        <div id="llm-response"></div>
+      </div>
+      <div id="error" class="hidden error"></div>
+    </div>
+    <div class="footer">
+      <small>Powered by Mistral AI</small>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
