@@ -1,6 +1,6 @@
 var LLM_CONFIG = {
-  apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/',
-  model: 'gemini-1.5-pro-latest'
+  apiUrl: 'https://generativelanguage.googleapis.com/v1/models/',
+  model: 'gemini-1.5-pro'
 };
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
