@@ -20,11 +20,8 @@ async function handleLLMRequest(questionData) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: 'Tu es un expert en francais. Donne LA BONNE REPONSE en premier, puis explique brievement.' }]
-      },
       contents: [{
-        parts: [{ text: 'Question ecri+:\n\n' + questionData.question + '\n\nDonne la bonne reponse.' }]
+        parts: [{ text: 'Tu es un expert en français. Donne LA BONNE RÉPONSE en premier, puis explique brièvement.\n\nQuestion ecri+:\n\n' + questionData.question + '\n\nDonne la bonne réponse.' }]
       }],
       generationConfig: {
         temperature: 0.2
